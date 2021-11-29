@@ -27,7 +27,7 @@ export PYTHONPATH=~/Project/facenet/src
 
    2）解压放在~/models/facenet中
 
-5. 修改
+5. 修改(如果是zouyonghe的存储库中的分支，不用修改）
 
    1)align下detect_face.py的85行
 
