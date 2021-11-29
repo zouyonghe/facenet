@@ -4,7 +4,8 @@ mkdir ~/Project
 
 cd ~/Project
 
-git clone https://github.com/davidsandberg/facenet.git
+#git clone https://github.com/davidsandberg/facenet.git 原始项目存储库
+git clone https://github.com/zouyonghe/facenet.git      #zouyonghe的存储库
 ```
 
 2. 准备conda环境
