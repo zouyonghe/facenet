@@ -26,14 +26,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from scipy import misc
-import tensorflow as tf
-import numpy as np
+import argparse
 import os
 import sys
-import argparse
-import facenet
+
 import align.detect_face
+import facenet
+import numpy as np
+import tensorflow as tf
+from scipy import misc
 from sklearn.cluster import DBSCAN
 
 

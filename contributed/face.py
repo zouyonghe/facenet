@@ -29,17 +29,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import pickle
 import os
+import pickle
 
+import align.detect_face
 import cv2
+import facenet
 import numpy as np
 import tensorflow as tf
 from scipy import misc
-
-import align.detect_face
-import facenet
-
 
 gpu_memory_fraction = 0.3
 facenet_model_checkpoint = os.path.dirname(__file__) + "/../model_checkpoints/20170512-110547"

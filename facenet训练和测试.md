@@ -1,4 +1,5 @@
 1. 克隆存储库
+
 ```shell
 mkdir ~/Project
 
@@ -9,6 +10,7 @@ git clone https://github.com/zouyonghe/facenet.git      #zouyonghe的存储库
 ```
 
 2. 准备conda环境
+
 ```shell
 conda create -n facenet tensorflow==1.9
 
@@ -18,6 +20,7 @@ pip install scipy sklearn opencv-python Pillow
 
 export PYTHONPATH=~/Project/facenet/src
 ```
+
 3. lfw数据集放在～/datasets/lfw中(最终结果是~/datasets/lfw/lfw/人名/图片名）
 
 4. 预训练模型放在～/models中
@@ -31,6 +34,7 @@ export PYTHONPATH=~/Project/facenet/src
 5. 修改(如果是zouyonghe的存储库中的facenet，不用修改）
 
 6. 开始对齐，时间较长
+
 ```shell
 cd ~/Project/facenet
 
@@ -48,6 +52,7 @@ python src/align/align_dataset_mtcnn.py \
 7. 训练完毕，在～/datasets/lfw/lfw_mtcnnpy_160中查看结果
 
 8. 运行测试
+
 ```shell
    python src/validate_on_lfw.py \
    ~/datasets/lfw/lfw_mtcnnpy_160 \

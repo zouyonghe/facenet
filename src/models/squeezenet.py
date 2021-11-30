@@ -5,6 +5,7 @@ from __future__ import print_function
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
+
 def fire_module(inputs,
                 squeeze_depth,
                 expand_depth,
@@ -18,14 +19,17 @@ def fire_module(inputs,
             outputs = expand(net, expand_depth)
             return outputs
 
+
 def squeeze(inputs, num_outputs):
     return slim.conv2d(inputs, num_outputs, [1, 1], stride=1, scope='squeeze')
+
 
 def expand(inputs, num_outputs):
     with tf.variable_scope('expand'):
         e1x1 = slim.conv2d(inputs, num_outputs, [1, 1], stride=1, scope='1x1')
         e3x3 = slim.conv2d(inputs, num_outputs, [3, 3], scope='3x3')
     return tf.concat([e1x1, e3x3], 3)
+
 
 def inference(images, keep_probability, phase_train=True, bottleneck_layer_size=128, weight_decay=0.0, reuse=None):
     batch_norm_params = {
@@ -36,7 +40,7 @@ def inference(images, keep_probability, phase_train=True, bottleneck_layer_size=
         # force in-place updates of mean and variance estimates
         'updates_collections': None,
         # Moving averages ends up in the trainable variables collection
-        'variables_collections': [ tf.GraphKeys.TRAINABLE_VARIABLES ],
+        'variables_collections': [tf.GraphKeys.TRAINABLE_VARIABLES],
     }
     with slim.arg_scope([slim.conv2d, slim.fully_connected],
                         weights_initializer=slim.xavier_initializer_conv2d(uniform=True),
@@ -62,6 +66,6 @@ def inference(images, keep_probability, phase_train=True, bottleneck_layer_size=
                 net = slim.conv2d(net, 1000, [1, 1], activation_fn=None, normalizer_fn=None, scope='conv10')
                 net = slim.avg_pool2d(net, net.get_shape()[1:3], scope='avgpool10')
                 net = tf.squeeze(net, [1, 2], name='logits')
-                net = slim.fully_connected(net, bottleneck_layer_size, activation_fn=None, 
-                        scope='Bottleneck', reuse=False)
+                net = slim.fully_connected(net, bottleneck_layer_size, activation_fn=None,
+                                           scope='Bottleneck', reuse=False)
     return net, None

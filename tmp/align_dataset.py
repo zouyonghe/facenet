@@ -26,13 +26,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from scipy import misc
-import sys
-import os
 import argparse
+import os
 import random
-import align_dlib  # @UnresolvedImport
+import sys
+
 import facenet
+from scipy import misc
+
+import align_dlib  # @UnresolvedImport
+
 
 def main(args):
     align = align_dlib.AlignDlib(os.path.expanduser(args.dlib_face_predictor))
@@ -41,7 +44,7 @@ def main(args):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     # Store some git revision info in a text file in the log directory
-    src_path,_ = os.path.split(os.path.realpath(__file__))
+    src_path, _ = os.path.split(os.path.realpath(__file__))
     facenet.store_revision_info(src_path, output_dir, ' '.join(sys.argv))
     dataset = facenet.get_dataset(args.input_dir)
     random.shuffle(dataset)
@@ -58,7 +61,7 @@ def main(args):
         for image_path in cls.image_paths:
             nrof_images_total += 1
             filename = os.path.splitext(os.path.split(image_path)[1])[0]
-            output_filename = os.path.join(output_class_dir, filename+'.png')
+            output_filename = os.path.join(output_class_dir, filename + '.png')
             if not os.path.exists(output_filename):
                 try:
                     img = misc.imread(image_path)
@@ -70,11 +73,11 @@ def main(args):
                         img = facenet.to_rgb(img)
                     if args.use_center_crop:
                         scaled = misc.imresize(img, args.prealigned_scale, interp='bilinear')
-                        sz1 = scaled.shape[1]/2
-                        sz2 = args.image_size/2
-                        aligned = scaled[(sz1-sz2):(sz1+sz2),(sz1-sz2):(sz1+sz2),:]
+                        sz1 = scaled.shape[1] / 2
+                        sz2 = args.image_size / 2
+                        aligned = scaled[(sz1 - sz2):(sz1 + sz2), (sz1 - sz2):(sz1 + sz2), :]
                     else:
-                        aligned = align.align(args.image_size, img, landmarkIndices=landmarkIndices, 
+                        aligned = align.align(args.image_size, img, landmarkIndices=landmarkIndices,
                                               skipMulti=False, scale=scale)
                     if aligned is not None:
                         print(image_path)
@@ -83,7 +86,7 @@ def main(args):
                     elif args.prealigned_dir:
                         # Face detection failed. Use center crop from pre-aligned dataset
                         class_name = os.path.split(output_class_dir)[1]
-                        image_path_without_ext = os.path.join(os.path.expanduser(args.prealigned_dir), 
+                        image_path_without_ext = os.path.join(os.path.expanduser(args.prealigned_dir),
                                                               class_name, filename)
                         # Find the extension of the image
                         exts = ('jpg', 'png')
@@ -100,38 +103,42 @@ def main(args):
                             print(errorMessage)
                         else:
                             scaled = misc.imresize(img, args.prealigned_scale, interp='bilinear')
-                            sz1 = scaled.shape[1]/2
-                            sz2 = args.image_size/2
-                            cropped = scaled[(sz1-sz2):(sz1+sz2),(sz1-sz2):(sz1+sz2),:]
+                            sz1 = scaled.shape[1] / 2
+                            sz2 = args.image_size / 2
+                            cropped = scaled[(sz1 - sz2):(sz1 + sz2), (sz1 - sz2):(sz1 + sz2), :]
                             print(image_path)
                             nrof_prealigned_images += 1
                             misc.imsave(output_filename, cropped)
                     else:
                         print('Unable to align "%s"' % image_path)
-                            
+
     print('Total number of images: %d' % nrof_images_total)
     print('Number of successfully aligned images: %d' % nrof_successfully_aligned)
     print('Number of pre-aligned images: %d' % nrof_prealigned_images)
-            
+
 
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument('input_dir', type=str, help='Directory with unaligned images.')
     parser.add_argument('output_dir', type=str, help='Directory with aligned face thumbnails.')
     parser.add_argument('--dlib_face_predictor', type=str,
-        help='File containing the dlib face predictor.', default='../data/shape_predictor_68_face_landmarks.dat')
+                        help='File containing the dlib face predictor.',
+                        default='../data/shape_predictor_68_face_landmarks.dat')
     parser.add_argument('--image_size', type=int,
-        help='Image size (height, width) in pixels.', default=110)
+                        help='Image size (height, width) in pixels.', default=110)
     parser.add_argument('--face_size', type=int,
-        help='Size of the face thumbnail (height, width) in pixels.', default=96)
-    parser.add_argument('--use_center_crop', 
-        help='Use the center crop of the original image after scaling the image using prealigned_scale.', action='store_true')
+                        help='Size of the face thumbnail (height, width) in pixels.', default=96)
+    parser.add_argument('--use_center_crop',
+                        help='Use the center crop of the original image after scaling the image using prealigned_scale.',
+                        action='store_true')
     parser.add_argument('--prealigned_dir', type=str,
-        help='Replace image with a pre-aligned version when face detection fails.', default='')
+                        help='Replace image with a pre-aligned version when face detection fails.', default='')
     parser.add_argument('--prealigned_scale', type=float,
-        help='The amount of scaling to apply to prealigned images before taking the center crop.', default=0.87)
+                        help='The amount of scaling to apply to prealigned images before taking the center crop.',
+                        default=0.87)
     return parser.parse_args(argv)
+
 
 if __name__ == '__main__':
     main(parse_arguments(sys.argv[1:]))

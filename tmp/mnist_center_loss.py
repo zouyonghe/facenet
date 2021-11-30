@@ -27,13 +27,13 @@ import os
 import sys
 import time
 
-from six.moves import urllib  # @UnresolvedImport
-import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
-from tensorflow.python.ops import control_flow_ops
 import facenet
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+from six.moves import urllib  # @UnresolvedImport
 from six.moves import xrange
+from tensorflow.python.ops import control_flow_ops
 
 SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
 WORK_DIRECTORY = 'data'
@@ -47,7 +47,6 @@ BATCH_SIZE = 64
 NUM_EPOCHS = 10
 EVAL_BATCH_SIZE = 64
 EVAL_FREQUENCY = 100  # Number of steps between evaluations.
-
 
 tf.app.flags.DEFINE_boolean("self_test", False, "True if running a self test.")
 tf.app.flags.DEFINE_boolean('use_fp16', False,
@@ -116,9 +115,9 @@ def fake_data(num_images):
 def error_rate(predictions, labels):
     """Return the error rate based on dense predictions and sparse labels."""
     return 100.0 - (
-        100.0 *
-        np.sum(np.argmax(predictions, 1) == labels) /
-        predictions.shape[0])
+            100.0 *
+            np.sum(np.argmax(predictions, 1) == labels) /
+            predictions.shape[0])
 
 
 def main(argv=None):  # pylint: disable=unused-argument
@@ -134,13 +133,13 @@ def main(argv=None):  # pylint: disable=unused-argument
         train_labels_filename = maybe_download('train-labels-idx1-ubyte.gz')
         test_data_filename = maybe_download('t10k-images-idx3-ubyte.gz')
         test_labels_filename = maybe_download('t10k-labels-idx1-ubyte.gz')
-    
+
         # Extract it into numpy arrays.
         train_data = extract_data(train_data_filename, 60000)
         train_labels = extract_labels(train_labels_filename, 60000)
         test_data = extract_data(test_data_filename, 10000)
         test_labels = extract_labels(test_labels_filename, 10000)
-    
+
         # Generate a validation set.
         validation_data = train_data[:VALIDATION_SIZE, ...]
         validation_labels = train_labels[:VALIDATION_SIZE]
@@ -190,8 +189,8 @@ def main(argv=None):  # pylint: disable=unused-argument
                                                   dtype=data_type()))
     fc2_biases = tf.Variable(tf.constant(
         0.1, shape=[NUM_LABELS], dtype=data_type()))
-    
-    def batch_norm(x, phase_train):  #pylint: disable=unused-variable
+
+    def batch_norm(x, phase_train):  # pylint: disable=unused-variable
         """
         Batch normalization on convolutional maps.
         Args:
@@ -209,22 +208,23 @@ def main(argv=None):  # pylint: disable=unused-argument
             phase_train = tf.convert_to_tensor(phase_train, dtype=tf.bool)
             n_out = int(x.get_shape()[-1])
             beta = tf.Variable(tf.constant(0.0, shape=[n_out], dtype=x.dtype),
-                               name=name+'/beta', trainable=True, dtype=x.dtype)
+                               name=name + '/beta', trainable=True, dtype=x.dtype)
             gamma = tf.Variable(tf.constant(1.0, shape=[n_out], dtype=x.dtype),
-                                name=name+'/gamma', trainable=True, dtype=x.dtype)
-          
+                                name=name + '/gamma', trainable=True, dtype=x.dtype)
+
             batch_mean, batch_var = tf.nn.moments(x, [0], name='moments')
             ema = tf.train.ExponentialMovingAverage(decay=0.9)
+
             def mean_var_with_update():
                 ema_apply_op = ema.apply([batch_mean, batch_var])
                 with tf.control_dependencies([ema_apply_op]):
                     return tf.identity(batch_mean), tf.identity(batch_var)
+
             mean, var = control_flow_ops.cond(phase_train,
                                               mean_var_with_update,
                                               lambda: (ema.average(batch_mean), ema.average(batch_var)))
             normed = tf.nn.batch_normalization(x, mean, var, beta, gamma, 1e-3)
         return normed
-    
 
     # We will replicate the model structure for the training subgraph, as well
     # as the evaluation subgraphs, while sharing the trainable parameters.
@@ -256,7 +256,7 @@ def main(argv=None):  # pylint: disable=unused-argument
                               padding='SAME')
         # Reshape the feature map cuboid into a 2D matrix to feed it to the
         # fully connected layers.
-        pool_shape = pool.get_shape().as_list() #pylint: disable=no-member
+        pool_shape = pool.get_shape().as_list()  # pylint: disable=no-member
         reshape = tf.reshape(
             pool,
             [pool_shape[0], pool_shape[1] * pool_shape[2] * pool_shape[3]])
@@ -274,42 +274,42 @@ def main(argv=None):  # pylint: disable=unused-argument
 
     # Training computation: logits + cross-entropy loss.
     logits, hidden = model(train_data_node, True)
-    #logits = batch_norm(logits, True)
+    # logits = batch_norm(logits, True)
     xent_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
         logits, train_labels_node))
     beta = 1e-3
-    #center_loss, update_centers = center_loss_op(hidden, train_labels_node)
+    # center_loss, update_centers = center_loss_op(hidden, train_labels_node)
     center_loss, _ = facenet.center_loss(hidden, train_labels_node, 0.95, NUM_LABELS)
     loss = xent_loss + beta * center_loss
-  
+
     # L2 regularization for the fully connected parameters.
     regularizers = (tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
                     tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases))
     # Add the regularization term to the loss.
     loss += 5e-4 * regularizers
-  
+
     # Optimizer: set up a variable that's incremented once per batch and
     # controls the learning rate decay.
     batch = tf.Variable(0, dtype=data_type())
     # Decay once per epoch, using an exponential schedule starting at 0.01.
     learning_rate = tf.train.exponential_decay(
-        0.01,                # Base learning rate.
+        0.01,  # Base learning rate.
         batch * BATCH_SIZE,  # Current index into the dataset.
-        train_size,          # Decay step.
-        0.95,                # Decay rate.
+        train_size,  # Decay step.
+        0.95,  # Decay rate.
         staircase=True)
     # Use simple momentum for the optimization.
     optimizer = tf.train.MomentumOptimizer(learning_rate,
                                            0.9).minimize(loss,
                                                          global_step=batch)
-  
+
     # Predictions for the current training minibatch.
     train_prediction = tf.nn.softmax(logits)
-  
+
     # Predictions for the test and validation, which we'll compute less often.
     eval_logits, eval_embeddings = model(eval_data)
     eval_prediction = tf.nn.softmax(eval_logits)
-    
+
     # Small utility function to evaluate a dataset by feeding batches of data to
     # {eval_data} and pulling the results from {eval_predictions}.
     # Saves memory and enables this to run on smaller GPUs.
@@ -331,7 +331,7 @@ def main(argv=None):  # pylint: disable=unused-argument
                     feed_dict={eval_data: data[-EVAL_BATCH_SIZE:, ...]})
                 predictions[begin:, :] = batch_predictions[begin - size:, :]
         return predictions
-  
+
     def calculate_embeddings(data, sess):
         """Get all predictions for a dataset by running it in small batches."""
         size = data.shape[0]
@@ -355,7 +355,7 @@ def main(argv=None):  # pylint: disable=unused-argument
     start_time = time.time()
     with tf.Session() as sess:
         # Run all the initializers to prepare the trainable parameters.
-        tf.global_variables_initializer().run() #pylint: disable=no-member
+        tf.global_variables_initializer().run()  # pylint: disable=no-member
         print('Initialized!')
         # Loop through training steps.
         for step in xrange(int(num_epochs * train_size) // BATCH_SIZE):
@@ -369,15 +369,16 @@ def main(argv=None):  # pylint: disable=unused-argument
             feed_dict = {train_data_node: batch_data,
                          train_labels_node: batch_labels}
             # Run the graph and fetch some of the nodes.
-            #_, l, lr, predictions = sess.run([optimizer, loss, learning_rate, train_prediction], feed_dict=feed_dict)
-            _, cl, l, lr, predictions = sess.run([optimizer, center_loss, loss, learning_rate, train_prediction], feed_dict=feed_dict)
+            # _, l, lr, predictions = sess.run([optimizer, loss, learning_rate, train_prediction], feed_dict=feed_dict)
+            _, cl, l, lr, predictions = sess.run([optimizer, center_loss, loss, learning_rate, train_prediction],
+                                                 feed_dict=feed_dict)
             if step % EVAL_FREQUENCY == 0:
                 elapsed_time = time.time() - start_time
                 start_time = time.time()
                 print('Step %d (epoch %.2f), %.1f ms' %
                       (step, float(step) * BATCH_SIZE / train_size,
                        1000 * elapsed_time / EVAL_FREQUENCY))
-                print('Minibatch loss: %.3f  %.3f, learning rate: %.6f' % (l, cl*beta, lr))
+                print('Minibatch loss: %.3f  %.3f, learning rate: %.6f' % (l, cl * beta, lr))
                 print('Minibatch error: %.1f%%' % error_rate(predictions, batch_labels))
                 print('Validation error: %.1f%%' % error_rate(
                     eval_in_batches(validation_data, sess), validation_labels))
@@ -389,14 +390,14 @@ def main(argv=None):  # pylint: disable=unused-argument
             print('test_error', test_error)
             assert test_error == 0.0, 'expected 0.0 test_error, got %.2f' % (
                 test_error,)
-            
+
         train_embeddings = calculate_embeddings(train_data, sess)
-        
-        color_list = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c' ]
+
+        color_list = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c']
         plt.figure(1)
-        for n in range(0,10):
-            idx = np.where(train_labels[0:10000]==n)
-            plt.plot(train_embeddings[idx,0], train_embeddings[idx,1], color_list[n]+'.')
+        for n in range(0, 10):
+            idx = np.where(train_labels[0:10000] == n)
+            plt.plot(train_embeddings[idx, 0], train_embeddings[idx, 1], color_list[n] + '.')
         plt.show()
 
 

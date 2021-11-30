@@ -1,7 +1,8 @@
-import shutil
 import argparse
 import os
+import shutil
 import sys
+
 
 def main(args):
     src_path_exp = os.path.expanduser(args.src_path)
@@ -21,12 +22,14 @@ def main(args):
         print('%s -> %s' % (src_file_path, dst_file))
         shutil.copyfile(src_file_path, dst_file)
 
+
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument('src_path', type=str, help='Path to the source directory.')
     parser.add_argument('dst_path', type=str, help='Path to the destination directory.')
     return parser.parse_args(argv)
+
 
 if __name__ == '__main__':
     main(parse_arguments(sys.argv[1:]))

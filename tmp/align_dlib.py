@@ -58,9 +58,9 @@ TEMPLATE = np.float32([
     (0.5240106503, 0.783370783245), (0.477561227414, 0.778476346951)])
 
 INV_TEMPLATE = np.float32([
-                            (-0.04099179660567834, -0.008425234314031194, 2.575498465013183),
-                            (0.04062510634554352, -0.009678089746831375, -1.2534351452524177),
-                            (0.0003666902601348179, 0.01810332406086298, -0.32206331976076663)])
+    (-0.04099179660567834, -0.008425234314031194, 2.575498465013183),
+    (0.04062510634554352, -0.009678089746831375, -1.2534351452524177),
+    (0.0003666902601348179, 0.01810332406086298, -0.32206331976076663)])
 
 TPL_MIN, TPL_MAX = np.min(TEMPLATE, axis=0), np.max(TEMPLATE, axis=0)
 MINMAX_TEMPLATE = (TEMPLATE - TPL_MIN) / (TPL_MAX - TPL_MIN)
@@ -95,7 +95,7 @@ class AlignDlib:
         """
         assert facePredictor is not None
 
-        #pylint: disable=no-member
+        # pylint: disable=no-member
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor(facePredictor)
 
@@ -112,7 +112,7 @@ class AlignDlib:
 
         try:
             return self.detector(rgbImg, 1)
-        except Exception as e: #pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             print("Warning: {}".format(e))
             # In rare cases, exceptions are thrown.
             return []
@@ -151,10 +151,10 @@ class AlignDlib:
         assert bb is not None
 
         points = self.predictor(rgbImg, bb)
-        #return list(map(lambda p: (p.x, p.y), points.parts()))
+        # return list(map(lambda p: (p.x, p.y), points.parts()))
         return [(p.x, p.y) for p in points.parts()]
 
-    #pylint: disable=dangerous-default-value
+    # pylint: disable=dangerous-default-value
     def align(self, imgDim, rgbImg, bb=None,
               landmarks=None, landmarkIndices=INNER_EYES_AND_BOTTOM_LIP,
               skipMulti=False, scale=1.0):
@@ -196,9 +196,9 @@ class AlignDlib:
         npLandmarks = np.float32(landmarks)
         npLandmarkIndices = np.array(landmarkIndices)
 
-        #pylint: disable=maybe-no-member
+        # pylint: disable=maybe-no-member
         H = cv2.getAffineTransform(npLandmarks[npLandmarkIndices],
-                                   imgDim * MINMAX_TEMPLATE[npLandmarkIndices]*scale + imgDim*(1-scale)/2)
+                                   imgDim * MINMAX_TEMPLATE[npLandmarkIndices] * scale + imgDim * (1 - scale) / 2)
         thumbnail = cv2.warpAffine(rgbImg, H, (imgDim, imgDim))
-        
+
         return thumbnail

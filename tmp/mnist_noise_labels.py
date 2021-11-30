@@ -27,9 +27,9 @@ import os
 import sys
 import time
 
-from six.moves import urllib  # @UnresolvedImport
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
+from six.moves import urllib  # @UnresolvedImport
 from six.moves import xrange
 
 SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
@@ -46,7 +46,6 @@ EVAL_BATCH_SIZE = 64
 EVAL_FREQUENCY = 100  # Number of steps between evaluations.
 NOISE_FACTOR = 0.2
 BETA = 0.8
-
 
 tf.app.flags.DEFINE_boolean("self_test", False, "True if running a self test.")
 tf.app.flags.DEFINE_boolean('use_fp16', False,
@@ -115,9 +114,9 @@ def fake_data(num_images):
 def error_rate(predictions, labels):
     """Return the error rate based on dense predictions and sparse labels."""
     return 100.0 - (
-        100.0 *
-        np.sum(np.argmax(predictions, 1) == labels) /
-        predictions.shape[0])
+            100.0 *
+            np.sum(np.argmax(predictions, 1) == labels) /
+            predictions.shape[0])
 
 
 def main(argv=None):  # pylint: disable=unused-argument
@@ -133,24 +132,25 @@ def main(argv=None):  # pylint: disable=unused-argument
         train_labels_filename = maybe_download('train-labels-idx1-ubyte.gz')
         test_data_filename = maybe_download('t10k-images-idx3-ubyte.gz')
         test_labels_filename = maybe_download('t10k-labels-idx1-ubyte.gz')
-    
+
         # Extract it into numpy arrays.
         train_data = extract_data(train_data_filename, 60000)
         train_labels = extract_labels(train_labels_filename, 60000)
         test_data = extract_data(test_data_filename, 10000)
         test_labels = extract_labels(test_labels_filename, 10000)
-    
+
         # Generate a validation set.
         validation_data = train_data[:VALIDATION_SIZE, ...]
         validation_labels = train_labels[:VALIDATION_SIZE]
         train_data = train_data[VALIDATION_SIZE:, ...]
         train_labels = train_labels[VALIDATION_SIZE:]
         nrof_training_examples = train_labels.shape[0]
-        nrof_changed_labels = int(nrof_training_examples*NOISE_FACTOR)
-        shuf = np.arange(0,nrof_training_examples)
+        nrof_changed_labels = int(nrof_training_examples * NOISE_FACTOR)
+        shuf = np.arange(0, nrof_training_examples)
         np.random.shuffle(shuf)
         change_idx = shuf[0:nrof_changed_labels]
-        train_labels[change_idx] = (train_labels[change_idx] + np.random.randint(1,9,size=(nrof_changed_labels,))) % NUM_LABELS
+        train_labels[change_idx] = (train_labels[change_idx] + np.random.randint(1, 9, size=(
+        nrof_changed_labels,))) % NUM_LABELS
         num_epochs = NUM_EPOCHS
     train_size = train_labels.shape[0]
 
@@ -220,7 +220,7 @@ def main(argv=None):  # pylint: disable=unused-argument
                               padding='SAME')
         # Reshape the feature map cuboid into a 2D matrix to feed it to the
         # fully connected layers.
-        pool_shape = pool.get_shape().as_list() #pylint: disable=no-member
+        pool_shape = pool.get_shape().as_list()  # pylint: disable=no-member
         reshape = tf.reshape(
             pool,
             [pool_shape[0], pool_shape[1] * pool_shape[2] * pool_shape[3]])
@@ -236,7 +236,7 @@ def main(argv=None):  # pylint: disable=unused-argument
 
     # Training computation: logits + cross-entropy loss.
     logits = model(train_data_node, True)
-    
+
     # t: observed noisy labels
     # q: estimated class probabilities (output from softmax)
     # z: argmax of q
@@ -245,41 +245,41 @@ def main(argv=None):  # pylint: disable=unused-argument
     q = tf.nn.softmax(logits)
     qqq = tf.arg_max(q, dimension=1)
     z = tf.one_hot(qqq, NUM_LABELS)
-    #cross_entropy = -tf.reduce_sum(t*tf.log(q),reduction_indices=1)
-    cross_entropy = -tf.reduce_sum((BETA*t+(1-BETA)*z)*tf.log(q),reduction_indices=1)
-    
+    # cross_entropy = -tf.reduce_sum(t*tf.log(q),reduction_indices=1)
+    cross_entropy = -tf.reduce_sum((BETA * t + (1 - BETA) * z) * tf.log(q), reduction_indices=1)
+
     loss = tf.reduce_mean(cross_entropy)
-    
-#     loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
-#         logits, train_labels_node))
-  
+
+    #     loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
+    #         logits, train_labels_node))
+
     # L2 regularization for the fully connected parameters.
     regularizers = (tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
                     tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases))
     # Add the regularization term to the loss.
     loss += 5e-4 * regularizers
-  
+
     # Optimizer: set up a variable that's incremented once per batch and
     # controls the learning rate decay.
     batch = tf.Variable(0, dtype=data_type())
     # Decay once per epoch, using an exponential schedule starting at 0.01.
     learning_rate = tf.train.exponential_decay(
-        0.01,                # Base learning rate.
+        0.01,  # Base learning rate.
         batch * BATCH_SIZE,  # Current index into the dataset.
-        train_size,          # Decay step.
-        0.95,                # Decay rate.
+        train_size,  # Decay step.
+        0.95,  # Decay rate.
         staircase=True)
     # Use simple momentum for the optimization.
     optimizer = tf.train.MomentumOptimizer(learning_rate,
                                            0.9).minimize(loss,
                                                          global_step=batch)
-  
+
     # Predictions for the current training minibatch.
     train_prediction = tf.nn.softmax(logits)
-  
+
     # Predictions for the test and validation, which we'll compute less often.
     eval_prediction = tf.nn.softmax(model(eval_data))
-    
+
     # Small utility function to evaluate a dataset by feeding batches of data to
     # {eval_data} and pulling the results from {eval_predictions}.
     # Saves memory and enables this to run on smaller GPUs.
@@ -301,12 +301,12 @@ def main(argv=None):  # pylint: disable=unused-argument
                     feed_dict={eval_data: data[-EVAL_BATCH_SIZE:, ...]})
                 predictions[begin:, :] = batch_predictions[begin - size:, :]
         return predictions
-  
+
     # Create a local session to run the training.
     start_time = time.time()
     with tf.Session() as sess:
         # Run all the initializers to prepare the trainable parameters.
-        tf.global_variables_initializer().run() #pylint: disable=no-member
+        tf.global_variables_initializer().run()  # pylint: disable=no-member
         print('Initialized!')
         # Loop through training steps.
         for step in xrange(int(num_epochs * train_size) // BATCH_SIZE):
