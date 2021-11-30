@@ -18,7 +18,7 @@ pip install scipy sklearn opencv-python Pillow
 
 export PYTHONPATH=~/Project/facenet/src
 ```
-3. lfw数据集放在～/datasets中
+3. lfw数据集放在～/datasets/lfw中(最终结果是~/datasets/lfw/lfw/人名/图片名）
 
 4. 预训练模型放在～/models中
 
