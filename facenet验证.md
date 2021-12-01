@@ -16,7 +16,7 @@ conda create -n facenet tensorflow==1.9
 
 conda activate facenet
 
-pip install scipy sklearn opencv-python Pillow
+pip install scipy sklearn opencv-python Pillow imageio
 
 export PYTHONPATH=~/Project/facenet/src
 ```
