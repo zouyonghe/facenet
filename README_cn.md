@@ -19,7 +19,7 @@ git clone https://github.com/zouyonghe/facenet.git      #zouyonghe的存储库
 
 ```shell
 conda create -n facenet tensorflow==1.9
-
+#conda create -n facenet tensorflow-gpu==1.9 使用支持gpu的tensorflow,生成预训练模型速度更快
 conda activate facenet
 
 pip install scipy sklearn opencv-python Pillow
