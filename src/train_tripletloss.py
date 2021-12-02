@@ -151,6 +151,11 @@ def main(args):
                                  learning_rate, args.moving_average_decay, tf.global_variables())
 
         # Create a saver
+        #**************************************************************************************
+        all_vars = tf.trainable_variables()
+        var_to_restore = [v for v in all_vars if not v.name.startswith('Logits')]
+        saver_restore = tf.train.Saver(var_to_restore)
+        #**************************************************************************************
         saver = tf.train.Saver(tf.trainable_variables(), max_to_keep=3)
 
         # Build the summary operation based on the TF collection of Summaries.
@@ -171,9 +176,14 @@ def main(args):
         with sess.as_default():
 
             if args.pretrained_model:
+                #print('Restoring pretrained model: %s' % args.pretrained_model)
+                #saver.restore(sess, os.path.expanduser(args.pretrained_model))
+                # **************************************************************************************
                 print('Restoring pretrained model: %s' % args.pretrained_model)
-                saver.restore(sess, os.path.expanduser(args.pretrained_model))
-
+                model_exp = os.path.expanduser(args.pretrained_model)
+                _, ckpt_file = facenet.get_model_filenames(model_exp)
+                saver_restore.restore(sess, os.path.join(model_exp, ckpt_file))
+                # **************************************************************************************
             # Training and validation loop
             epoch = 0
             while epoch < args.max_nrof_epochs:
@@ -435,19 +445,19 @@ def parse_arguments(argv):
     parser.add_argument('--models_base_dir', type=str,
                         help='Directory where to write trained models and checkpoints.', default='~/models/facenet')
     parser.add_argument('--gpu_memory_fraction', type=float,
-                        help='Upper bound on the amount of GPU memory that will be used by the process.', default=1.0)
+                        help='Upper bound on the amount of GPU memory that will be used by the process.', default=0.5)
     parser.add_argument('--pretrained_model', type=str,
                         help='Load a pretrained model before training starts.')
     parser.add_argument('--data_dir', type=str,
                         help='Path to the data directory containing aligned face patches.',
-                        default='~/datasets/casia/casia_maxpy_mtcnnalign_182_160')
+                        default='~/datasets/lfw/lfw_mtcnnpy_160')#~/datasets/CASIA-WebFace/CASIA-WebFace_160
     parser.add_argument('--model_def', type=str,
                         help='Model definition. Points to a module containing the definition of the inference graph.',
                         default='models.inception_resnet_v1')
     parser.add_argument('--max_nrof_epochs', type=int,
                         help='Number of epochs to run.', default=500)
     parser.add_argument('--batch_size', type=int,
-                        help='Number of images to process in a batch.', default=90)
+                        help='Number of images to process in a batch.', default=3)
     parser.add_argument('--image_size', type=int,
                         help='Image size (height, width) in pixels.', default=160)
     parser.add_argument('--people_per_batch', type=int,
