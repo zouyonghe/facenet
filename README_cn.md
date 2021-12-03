@@ -45,7 +45,20 @@ python src/align/align_dataset_mtcnn.py \
 
 4. 生成预训练模型
 ```shell
-python src/train_tripletloss.py --models_base_dir ~/models/facenet  --model_def models.inception_resnet_v1 --data_dir ~/datasets/lfw/lfw_mtcnnpy_160 --image_size 160 --optimizer RMSPROP  --max_nrof_epochs 20 --keep_probability 0.8 --random_crop --random_flip  --weight_decay 5e-5 --alpha 0.1 --gpu_memory_fraction 0.6 --batch_size 3  
+python src/train_tripletloss.py \
+--models_base_dir ~/models/facenet  \
+--model_def models.inception_resnet_v1 \
+--data_dir ~/datasets/lfw/lfw_mtcnnpy_160 \
+--image_size 160 \
+--optimizer RMSPROP  \
+--max_nrof_epochs 20 \
+--keep_probability 0.8 \
+--random_crop \
+--random_flip  \
+--weight_decay 5e-5 \
+--alpha 0.1 \
+--gpu_memory_fraction 0.6 \
+--batch_size 3  
 ```
 
 5. 运行准确性测试
