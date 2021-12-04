@@ -41,24 +41,61 @@ python src/align/align_dataset_mtcnn.py \
 --random_order \
 --gpu_memory_fraction 0.25 \
 & done
+
+#训练webface数据集
+for N in {1...4}; do \
+python src/align/align_dataset_mtcnn.py \
+~/datasets/CASIA-WebFace/CASIA-WebFace \
+~/datasets/CASIA-WebFace/CASIA-WebFace_mtcnnalign_182 \
+--image_size 182 \
+--margin 32 \
+--random_order \
+--gpu_memory_fraction 0.7 \
+& done
 ```
 
 4. 生成预训练模型
 ```shell
+#使用三元损失训练
 python src/train_tripletloss.py \
 --models_base_dir ~/models/facenet  \
 --model_def models.inception_resnet_v1 \
 --data_dir ~/datasets/lfw/lfw_mtcnnpy_160 \
 --image_size 160 \
 --optimizer RMSPROP  \
---max_nrof_epochs 20 \
+--max_nrof_epochs 150 \
 --keep_probability 0.8 \
 --random_crop \
 --random_flip  \
 --weight_decay 5e-5 \
 --alpha 0.1 \
---gpu_memory_fraction 0.6 \
---batch_size 3  
+--gpu_memory_fraction 0.8 \
+
+#使用中心损失训练
+python src/train_softmax.py \
+--logs_base_dir ~/logs/facenet \
+--models_base_dir ~/models/facenet \
+--data_dir ~/datasets/CASIA-WebFace/CASIA-WebFace_160 \
+--image_size 160 \
+--model_def models.inception_resnet_v1 \
+--lfw_dir ~/datasets/lfw/lfw_mtcnnpy_160 \
+--optimizer ADAM \
+--learning_rate 0.01 \
+--max_nrof_epochs 500 \
+--keep_probability 0.8 \
+--random_crop \
+--random_flip \
+--weight_decay 5e-4 \
+--embedding_size 512 \
+--lfw_distance_metric 1 \
+--lfw_use_flipped_images \
+--lfw_subtract_mean 
+--validation_set_split_ratio 0.05 \
+--validate_every_n_epochs 5 \
+--prelogits_norm_loss_factor 5e-4 \
+--gpu_memory_fraction 0.7 \
+--batch_size 32
+
 ```
 
 5. 运行准确性测试
