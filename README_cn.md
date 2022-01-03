@@ -70,6 +70,7 @@ python src/train_tripletloss.py \
 --weight_decay 5e-5 \
 --alpha 0.1 \
 --gpu_memory_fraction 0.8 \
+--batch_size 3
 
 #使用中心损失训练
 python src/train_softmax.py \
@@ -89,7 +90,7 @@ python src/train_softmax.py \
 --embedding_size 512 \
 --lfw_distance_metric 1 \
 --lfw_use_flipped_images \
---lfw_subtract_mean 
+--lfw_subtract_mean \
 --validation_set_split_ratio 0.05 \
 --validate_every_n_epochs 5 \
 --prelogits_norm_loss_factor 5e-4 \
