@@ -1,5 +1,5 @@
 # 使用Tensorflow实现的人脸识别
-这是论文 “FaceNet: A Unified Embedding for Face Recognition and Clustering“ 中描述的人脸识别器基于Tensorflow的实现。该项目也使用了牛津大学 Visual Geometry Group 发表的 “Deep Face Recognition” 论文中一些观点。
+这是论文 “FaceNet: A Unified Embedding for Face Recognition and Clustering” 中描述的人脸识别器基于Tensorflow的实现。该项目也使用了牛津大学 Visual Geometry Group 发表的 “Deep Face Recognition” 论文中一些观点。
 
 ## 兼容性
 该项目在 Arch rolling 和 Anaconda 中 python3.6.13 下 Tensorflow==1.9 和 Tensorflow-gpu==1.9 进行测试。
