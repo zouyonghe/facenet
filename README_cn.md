@@ -113,7 +113,6 @@ python src/train_softmax.py \
 --batch_size 32
 
 #预训练模型准确率测试
-```shell
 python src/validate_on_lfw.py \
 ~/datasets/lfw/lfw_mtcnnpy_160 \
 ~/models/facenet/20180402-114759 \
@@ -121,6 +120,9 @@ python src/validate_on_lfw.py \
 --use_flipped_images \
 --subtract_mean \
 --use_fixed_image_standardization
+
+#使用TensorBoard展示训练进度
+tensorboard --logdir=~/logs/facenet --port 6006
 ```
 
 5. 训练分类器
